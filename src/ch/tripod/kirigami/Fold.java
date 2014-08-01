@@ -108,7 +108,7 @@ public class Fold {
     }
 
     Collection<Fold> cut(int degree, Cut c, Line2D l) {
-        List<Fold> ret = new ArrayList<Fold>();
+        int numFolds = 1 << degree;
 
         // quickly count if we cut through completely. otherwise ignore this cut
         int count = 0;
@@ -117,56 +117,69 @@ public class Fold {
                 count++;
             }
         }
-        if (count == 0 || count %2 == 1) {
-            ret.add(this);
-            return ret;
-        }
 
-        // build new folds
-        Fold prev = null;
-        Point2D pl = null;
-        Fold fold = new Fold(z, front);
-        ret.add(fold);
+        List<Fold> ret = new ArrayList<Fold>();
+        if (count > 0 && count % 2 == 0) {
+            // build new folds
+            Fold prev = null;
+            Point2D pl = null;
+            Fold fold = new Fold(z, front);
+            ret.add(fold);
 
-        for (Line2D e: edges) {
-            if (l.intersectsLine(e)) {
-                Point2D pi = Utils.getLineLineIntersection(l, e);
-                Point2D p1 = e.getP1();
-                Point2D p2 = e.getP2();
-                c.getIntersections().add(pi);
+            for (Line2D e: edges) {
+                if (l.intersectsLine(e)) {
+                    Point2D pi = Utils.getLineLineIntersection(l, e);
+                    Point2D p1 = e.getP1();
+                    Point2D p2 = e.getP2();
+                    c.getIntersections().add(pi);
 
-                if (prev == null) {
-                    prev = fold;
-                    pl = pi;
-                    fold.addEdge(new Line2D.Double(p1, pi));
+                    if (prev == null) {
+                        prev = fold;
+                        pl = pi;
+                        fold.addEdge(new Line2D.Double(p1, pi));
 
-                    fold = new Fold(z, front);
-                    fold.addEdge(new Line2D.Double(pi, p2));
-                    ret.add(fold);
+                        fold = new Fold(z, front);
+                        fold.addEdge(new Line2D.Double(pi, p2));
+                        ret.add(fold);
+                    } else {
+                        fold.addEdge(new Line2D.Double(p1, pi));
+                        fold.addEdge(new Line2D.Double(pi, pl));
+                        // restore prev
+                        fold = prev;
+                        fold.addEdge(new Line2D.Double(pl, pi));
+                        fold.addEdge(new Line2D.Double(pi, p2));
+                        prev = null;
+                    }
                 } else {
-                    fold.addEdge(new Line2D.Double(p1, pi));
-                    fold.addEdge(new Line2D.Double(pi, pl));
-                    // restore prev
-                    fold = prev;
-                    fold.addEdge(new Line2D.Double(pl, pi));
-                    fold.addEdge(new Line2D.Double(pi, p2));
-                    prev = null;
+                    fold.addEdge(e);
+                }
+            }
+            // now reflect every other fold
+            for (Fold f: ret) {
+                f.trail.addAll(trail);
+                if (l.relativeCCW(f.getCenter()) > 0) {
+                    f.mirror(l);
+                    f.z = numFolds - 1 - f.z;
+                    f.trail.addFirst(l);
+                }
+            }
+        } else {
+            if (count == 0) {
+                // check if we need to flip
+                if (l.relativeCCW(this.getCenter()) > 0) {
+                    Fold fold = new Fold(z, front);
+                    fold.edges.addAll(edges);
+                    fold.mirror(l);
+                    fold.z = numFolds - 1 - fold.z;
+                    fold.trail.addAll(trail);
+                    fold.trail.addFirst(l);
+                    ret.add(fold);
                 }
             } else {
-                fold.addEdge(e);
+                ret.add(this);
             }
         }
 
-        // now reflect every other fold
-        int numFolds = 1 << degree;
-        for (Fold f: ret) {
-            f.trail.addAll(trail);
-            if (l.relativeCCW(f.getCenter()) > 0) {
-                f.mirror(l);
-                f.z = numFolds - 1 - f.z;
-                f.trail.addFirst(l);
-            }
-        }
         return ret;
     }
 
@@ -177,9 +190,6 @@ public class Fold {
             pts[i++] = Utils.reflect(line, e.getP1());
         }
         clear();
-//        for (i=pts.length - 1; i>=0; i--) {
-//            addEdge(new Line2D.Double(pts[i], pts[(i - 1 + pts.length) % pts.length]));
-//        }
         for (i=0;i<pts.length;i++) {
             addEdge(new Line2D.Double(pts[i], pts[(i + 1) % pts.length]));
         }

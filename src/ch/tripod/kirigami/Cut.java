@@ -30,19 +30,35 @@ public class Cut {
 
     private final int id;
 
-    private Point p[];
+    private Point2D.Double p[];
 
     private java.util.List<Point2D> intersections = new ArrayList<Point2D>();
 
     private int selectedPoint = -1;
 
+    private double a;
+
+    private double c;
+
     Cut(int id, Point p0) {
+        Point2D.Double dp = new Point2D.Double(p0.x, p0.y);
         this.id = id;
-        p = new Point[]{p0, p0};
+        p = new Point2D.Double[]{dp, dp};
+        calc();
     }
 
     public int getId() {
         return id;
+    }
+
+    private void calc() {
+        if (p[0].x == p[1].x) {
+            a = Double.POSITIVE_INFINITY;
+            c = p[0].x;
+        } else {
+            a = (p[1].y - p[0].y) / (p[1].x - p[0].x);
+            c = p[0].y - a*p[0].x;
+        }
     }
 
     public Line2D getLine2D() {
@@ -58,7 +74,8 @@ public class Cut {
     }
 
     public void setPoint(int idx, Point p) {
-        this.p[idx] = p;
+        this.p[idx] = new Point2D.Double(p.x, p.y);
+        calc();
     }
 
     public int getHitPointIdx(Point2D pt) {
@@ -71,20 +88,39 @@ public class Cut {
         }
     }
 
-    public void draw(Graphics2D g2d) {
+    public void draw(Graphics2D g2d, Dimension frame) {
         for (int i=0; i<p.length; i++) {
             if (selectedPoint == i) {
                 g2d.setColor(Color.red);
             } else {
                 g2d.setColor(Color.black);
             }
-            g2d.drawOval(p[i].x-5, p[i].y-5, 10, 10);
+            g2d.drawOval((int) (p[i].x-5), (int) (p[i].y-5), 10, 10);
         }
+
         float[] dashPattern = { 30, 10, 10, 10 };
         Stroke s = g2d.getStroke();
         g2d.setStroke(new BasicStroke(1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 1, dashPattern, 0));
         g2d.setColor(Color.gray);
-        g2d.drawLine(p[0].x,p[0].y,p[1].x,p[1].y);
+
+        double x0, x1, y0, y1;
+        double w2 = frame.getWidth() / 2;
+        double h2 = frame.getHeight() / 2;
+        if (a == Double.POSITIVE_INFINITY) {
+            x0 = x1 = c;
+            y0 = -h2;
+            y1 = h2;
+        } else if (a == 0) {
+            x0 = -w2;
+            x1 = w2;
+            y0 = y1 = c;
+        } else {
+            x0 = -w2;
+            y0 = a * x0 + c;
+            x1 = w2;
+            y1 = a * x1 + c;
+        }
+        g2d.drawLine((int) x0, (int) y0, (int) x1, (int) y1);
         g2d.setStroke(s);
         for (Point2D p: intersections) {
             g2d.setColor(Color.gray);

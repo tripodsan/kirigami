@@ -28,53 +28,20 @@ import javax.swing.event.ChangeListener;
  */
 public class Toolbar extends JToolBar {
 
-//    private Action newNode = new De("New");
-//    private Action clearAll = new ClearAction("Clear");
-//    private Action kind = new KindComboAction("Kind");
-//    private Action color = new ColorAction("Color");
-//    private Action connect = new ConnectAction("Connect");
-//    private Action delete = new DeleteAction("Delete");
-//    private Action random = new RandomAction("Random");
-    private JButton defaultButton = new JButton("New");
-    private JComboBox kindCombo = new JComboBox();
-//    private ColorIcon hueIcon = new ColorIcon(Color.blue);
-    private JPopupMenu popup = new JPopupMenu();
+    private JToggleButton draw = new JToggleButton("Draw");
 
-    public Toolbar(CutArea main) {
+    public Toolbar(final CutArea main) {
         this.setLayout(new FlowLayout(FlowLayout.LEFT));
         this.setBackground(Color.lightGray);
 
         this.add(main.ACTION_NEW);
-//        this.add(new JButton("Clear"));
-//        this.add(kindCombo);
-//        this.add(new JButton(color));
-//        this.add(new JLabel(hueIcon));
-//        JSpinner js = new JSpinner();
-//        js.setModel(new SpinnerNumberModel(35, 5, 100, 5));
-//        js.addChangeListener(new ChangeListener() {
-//
-//            public void stateChanged(ChangeEvent e) {
-//                JSpinner s = (JSpinner) e.getSource();
-//                radius = (Integer) s.getValue();
-//                Node.updateRadius(nodes, radius);
-//                GraphPanel.this.repaint();
-//            }
-//        });
-//        this.add(new JLabel("Size:"));
-//        this.add(js);
-//        this.add(new JButton("random"));
+        this.add(draw);
 
-//        popup.add(new JMenuItem(newNode));
-//        popup.add(new JMenuItem(color));
-//        popup.add(new JMenuItem(connect));
-//        popup.add(new JMenuItem(delete));
-//        JMenu subMenu = new JMenu("Kind");
-//        for (Kind k : Kind.values()) {
-//            kindCombo.addItem(k);
-//            subMenu.add(new JMenuItem(new KindItemAction(k)));
-//        }
-//        popup.add(subMenu);
-//        kindCombo.addActionListener(kind);
+        draw.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                main.setDrawMode(draw.isSelected());
+            }
+        });
     }
-
 }

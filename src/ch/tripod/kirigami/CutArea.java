@@ -39,6 +39,8 @@ public class CutArea extends JPanel {
     Cut line;
     int selectedPoint;
 
+    boolean drawMode;
+
     Fold paper;
 
     List<Fold> pieces = new ArrayList<Fold>();
@@ -133,7 +135,7 @@ public class CutArea extends JPanel {
         }
 
         for (Cut l : lines) {
-            l.draw(g2d);
+            l.draw(g2d, getSize());
         }
 
         g2d.setColor(Color.red);
@@ -179,7 +181,7 @@ public class CutArea extends JPanel {
 
         @Override
         public void mousePressed(MouseEvent mouseEvent) {
-            if (mouseEvent.getButton() == MouseEvent.BUTTON1) {
+            if (drawMode) {
                 points.add(map(mouseEvent.getPoint()));
                 calc();
                 repaint();
@@ -223,5 +225,9 @@ public class CutArea extends JPanel {
             clear();
         }
     };
+
+    public void setDrawMode(boolean mode) {
+        this.drawMode = mode;
+    }
 
 }

@@ -30,14 +30,21 @@ public class Main {
         EventQueue.invokeLater(new Runnable() {
 
             public void run() {
-                JFrame f = new JFrame("Kirigami");
-                f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
                 CutArea cutArea = new CutArea();
                 Toolbar tb = new Toolbar(cutArea);
-                cutArea.setSize(800, 800);
+                Ruler hr = new Ruler().setHorizontal(true);
+                Ruler vr = new Ruler().setHorizontal(false);
+                JPanel content = new JPanel(new BorderLayout());
+                content.add(hr, BorderLayout.PAGE_START);
+                content.add(vr, BorderLayout.LINE_START);
+                content.add(cutArea, BorderLayout.CENTER);
+
+
+                JFrame f = new JFrame("Kirigami");
+                f.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
                 f.add(tb, BorderLayout.NORTH);
-                f.add(new JScrollPane(cutArea), BorderLayout.CENTER);
-                //f.getRootPane().setDefaultButton(gp.control.defaultButton);
+                f.add(content, BorderLayout.CENTER);
+
                 f.pack();
                 f.setSize(800, 800);
                 f.setLocationByPlatform(true);
